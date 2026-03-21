@@ -1,7 +1,13 @@
-import 'package:fitness_mobile/Screens/splash_screen.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter/material.dart';
+import 'Screens/splash_screen.dart'; // Ensure this path is correct for your splash screen
 
 void main() {
+
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  // 1. PRESERVE: Keep native screen up until we say so!
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  
   runApp(const MyApp());
 }
 
