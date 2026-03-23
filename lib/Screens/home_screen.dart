@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Fitness Quest'),
+        title: const Text('Fitness Mobile'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -62,6 +62,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         return ListTile(
                           title: Text(workout['name']),
                           subtitle: Text(workout['date']),
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              '/workout',
+                              arguments: workout['id'],
+                            );
+                          },
                           trailing: IconButton(
                             icon: const Icon(Icons.delete),
                             onPressed: () => deleteWorkout(workout['id']),
