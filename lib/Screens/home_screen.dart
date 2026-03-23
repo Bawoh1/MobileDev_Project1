@@ -24,7 +24,7 @@ class HomeScreen extends StatelessWidget {
 
             ElevatedButton(
               onPressed: () {
-                // Next screen later
+                Navigator.pushNamed(context, '/workout');
               },
               child: const Text('Start Workout'),
             ),

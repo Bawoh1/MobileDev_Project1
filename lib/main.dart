@@ -2,6 +2,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter/material.dart';
 import 'Screens/splash_screen.dart'; // Ensure this path is correct for your splash screen
 import 'Screens/home_screen.dart'; // Add import for HomeScreen
+import 'Screens/workout_log_screen.dart'; // Add import for WorkoutLogScreen
 
 void main() {
 
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const SplashScreen(),
         '/home': (context) => const HomeScreen(),
+        '/workout': (context) => const WorkoutLogScreen(),
       },
     );
   }
