@@ -1,51 +1,74 @@
 import 'package:flutter/material.dart';
+import '../Data/database_helper.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<Map<String, dynamic>> workouts = [];
+
+  @override
+  void initState() {
+    super.initState();
+    loadWorkouts();
+  }
+
+  Future<void> loadWorkouts() async {
+    final data = await DatabaseHelper.instance.getWorkouts();
+    setState(() {
+      workouts = data;
+    });
+  }
+
+  Future<void> addWorkout() async {
+    await DatabaseHelper.instance.createWorkout("New Workout");
+    loadWorkouts();
+  }
+
+  Future<void> deleteWorkout(int id) async {
+    await DatabaseHelper.instance.deleteWorkout(id);
+    loadWorkouts();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Fitness Mobile'),
-        centerTitle: true,
+        title: const Text('Fitness Quest'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Text(
-              '🔥 Streak: 3 days',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ElevatedButton(
+              onPressed: addWorkout,
+              child: const Text('Start Workout'),
             ),
 
             const SizedBox(height: 20),
 
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/workout');
-              },
-              child: const Text('Start Workout'),
-            ),
-
-            const SizedBox(height: 30),
-
-            const Text(
-              'Recent Workouts',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(height: 10),
-
             Expanded(
-              child: ListView(
-                children: const [
-                  ListTile(title: Text('Push Day')),
-                  ListTile(title: Text('Leg Day')),
-                  ListTile(title: Text('Pull Day')),
-                ],
-              ),
+              child: workouts.isEmpty
+                  ? const Center(child: Text("No workouts yet"))
+                  : ListView.builder(
+                      itemCount: workouts.length,
+                      itemBuilder: (context, index) {
+                        final workout = workouts[index];
+
+                        return ListTile(
+                          title: Text(workout['name']),
+                          subtitle: Text(workout['date']),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () => deleteWorkout(workout['id']),
+                          ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),
