@@ -20,7 +20,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     // 1. Setup the "Pump" animation (Scale up slightly)
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 1300),
     );
 
     _scaleAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
@@ -38,7 +38,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       if (status == AnimationStatus.completed) {
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
-            transitionDuration: const Duration(milliseconds: 500),
+            transitionDuration: const Duration(milliseconds: 700),
             pageBuilder: (context, animation, secondaryAnimation) => const HomeScreen(),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);

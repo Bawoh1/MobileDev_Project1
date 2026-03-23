@@ -1,13 +1,14 @@
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter/material.dart';
 import 'Screens/splash_screen.dart'; // Ensure this path is correct for your splash screen
+import 'Screens/home_screen.dart'; // Add import for HomeScreen
 
 void main() {
 
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   // 1. PRESERVE: Keep native screen up until we say so!
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  
+
   runApp(const MyApp());
 }
 
@@ -19,7 +20,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SplashScreen()
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const SplashScreen(),
+        '/home': (context) => const HomeScreen(),
+      },
     );
   }
 }
