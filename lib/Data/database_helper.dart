@@ -78,6 +78,17 @@ Future<int> deleteWorkout(int id) async {
     whereArgs: [id],
   );
 }
+// UPDATE exercise
+Future<int> updateExercise(int id, Map<String, dynamic> data) async {
+  final db = await database;
+
+  return await db.update(
+    'exercises',
+    data,
+    where: 'id = ?',
+    whereArgs: [id],
+  );
+}
   
   // Close database connection
   Future close() async {

@@ -10,6 +10,7 @@ class WorkoutLogScreen extends StatefulWidget {
 
 class _WorkoutLogScreenState extends State<WorkoutLogScreen> {
   int? workoutId;
+  int? editingId;
   List<Map<String, dynamic>> exercises = [];
 
   final TextEditingController nameController = TextEditingController();
@@ -40,60 +41,72 @@ class _WorkoutLogScreenState extends State<WorkoutLogScreen> {
     });
   }
 
+  void showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
 
-void showError(String message) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(message)),
-  );
-}
+  Future<void> addExercise() async {
+    final name = nameController.text.trim();
+    final sets = int.tryParse(setsController.text);
+    final reps = int.tryParse(repsController.text);
+    final weightInput = weightController.text.trim();
+    final weight = weightInput.isEmpty ? 0 : double.tryParse(weightInput);
 
-Future<void> addExercise() async {
-final name = nameController.text.trim();
+    if (name.isEmpty) {
+      showError("Exercise name is required");
+      return;
+    }
 
-  final sets = int.tryParse(setsController.text);
-  final reps = int.tryParse(repsController.text);
-  final weightInput = weightController.text.trim();
-  final weight = weightInput.isEmpty ? 0 : double.tryParse(weightInput);
+    if (sets == null || reps == null) {
+      showError("Sets and reps must be valid numbers");
+      return;
+    }
 
-//  Validation checks
-if (name.isEmpty) {
-  showError("Exercise name is required");
-  return;
-}
+    if (sets <= 0 || reps <= 0) {
+      showError("Sets and reps must be greater than 0");
+      return;
+    }
 
-if (sets == null || reps == null) {
-  showError("Sets and reps must be valid numbers");
-  return;
-}
+    if (weight == null) {
+      showError("Weight must be a valid number");
+      return;
+    }
 
-if (sets <= 0 || reps <= 0) {
-  showError("Sets and reps must be greater than 0");
-  return;
-}
+    final db = await DatabaseHelper.instance.database;
 
-if (weight == null) {
-  showError("Weight must be a valid number");
-  return;
-}
+    if (editingId != null) {
+      await db.update(
+        'exercises',
+        {
+          'workout_id': workoutId,
+          'name': name,
+          'sets': sets,
+          'reps': reps,
+          'weight': weight,
+        },
+        where: 'id = ?',
+        whereArgs: [editingId],
+      );
+      editingId = null;
+    } else {
+      await db.insert('exercises', {
+        'workout_id': workoutId,
+        'name': name,
+        'sets': sets,
+        'reps': reps,
+        'weight': weight,
+      });
+    }
 
-  final db = await DatabaseHelper.instance.database;
+    nameController.clear();
+    setsController.clear();
+    repsController.clear();
+    weightController.clear();
 
-  await db.insert('exercises', {
-    'workout_id': workoutId,
-    'name': name,
-    'sets': sets,
-    'reps': reps,
-    'weight': weight,
-  });
-
-  // Clear fields
-  nameController.clear();
-  setsController.clear();
-  repsController.clear();
-  weightController.clear();
-
-  loadExercises();
-}
+    loadExercises();
+  }
 
   Future<void> deleteExercise(int id) async {
     final db = await DatabaseHelper.instance.database;
@@ -154,7 +167,16 @@ if (weight == null) {
                         return ListTile(
                           title: Text(ex['name']),
                           subtitle: Text(
-                              "${ex['sets']} sets x ${ex['reps']} reps | ${ex['weight']} lbs"),
+                            "${ex['sets']} sets x ${ex['reps']} reps | ${ex['weight']} lbs"
+                          ),
+                          onTap: () {
+                            nameController.text = ex['name'];
+                            setsController.text = ex['sets'].toString();
+                            repsController.text = ex['reps'].toString();
+                            weightController.text = ex['weight'].toString();
+
+                            editingId = ex['id'];
+                          },
                           trailing: IconButton(
                             icon: const Icon(Icons.delete),
                             onPressed: () => deleteExercise(ex['id']),
