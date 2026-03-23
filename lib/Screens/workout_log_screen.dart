@@ -40,33 +40,60 @@ class _WorkoutLogScreenState extends State<WorkoutLogScreen> {
     });
   }
 
-  Future<void> addExercise() async {
-    if (nameController.text.isEmpty ||
-        setsController.text.isEmpty ||
-        repsController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Fill all required fields")),
-      );
-      return;
-    }
 
-    final db = await DatabaseHelper.instance.database;
+void showError(String message) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(message)),
+  );
+}
 
-    await db.insert('exercises', {
-      'workout_id': workoutId,
-      'name': nameController.text,
-      'sets': int.parse(setsController.text),
-      'reps': int.parse(repsController.text),
-      'weight': double.tryParse(weightController.text) ?? 0,
-    });
+Future<void> addExercise() async {
+final name = nameController.text.trim();
 
-    nameController.clear();
-    setsController.clear();
-    repsController.clear();
-    weightController.clear();
+  final sets = int.tryParse(setsController.text);
+  final reps = int.tryParse(repsController.text);
+  final weightInput = weightController.text.trim();
+  final weight = weightInput.isEmpty ? 0 : double.tryParse(weightInput);
 
-    loadExercises();
-  }
+//  Validation checks
+if (name.isEmpty) {
+  showError("Exercise name is required");
+  return;
+}
+
+if (sets == null || reps == null) {
+  showError("Sets and reps must be valid numbers");
+  return;
+}
+
+if (sets <= 0 || reps <= 0) {
+  showError("Sets and reps must be greater than 0");
+  return;
+}
+
+if (weight == null) {
+  showError("Weight must be a valid number");
+  return;
+}
+
+  final db = await DatabaseHelper.instance.database;
+
+  await db.insert('exercises', {
+    'workout_id': workoutId,
+    'name': name,
+    'sets': sets,
+    'reps': reps,
+    'weight': weight,
+  });
+
+  // Clear fields
+  nameController.clear();
+  setsController.clear();
+  repsController.clear();
+  weightController.clear();
+
+  loadExercises();
+}
 
   Future<void> deleteExercise(int id) async {
     final db = await DatabaseHelper.instance.database;
