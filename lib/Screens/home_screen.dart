@@ -73,6 +73,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 20),
 
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/progress');
+              },
+              child: const Text("View Progress"),
+            ),
+
             Expanded(
               child: workouts.isEmpty
                   ? const Center(child: Text("No workouts yet"))
