@@ -2,6 +2,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'Screens/splash_screen.dart'; 
 import 'Screens/home_screen.dart'; 
 import 'Screens/workout_log_screen.dart'; 
@@ -31,12 +32,28 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  ThemeMode _themeMode = ThemeMode.light;
+  ThemeMode _themeMode = ThemeMode.dark;
 
-  void _toggleTheme() {
+  @override
+  void initState() {
+    super.initState();
+    _loadTheme();
+  }
+
+  Future<void> _loadTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isDark = prefs.getBool('isDarkMode') ?? true;
     setState(() {
-      _themeMode =
-          _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+      _themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
+    });
+  }
+
+  Future<void> _toggleTheme() async {
+    final isDark = _themeMode != ThemeMode.dark;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isDarkMode', isDark);
+    setState(() {
+      _themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
     });
   }
 
@@ -54,7 +71,7 @@ class _MyAppState extends State<MyApp> {
         '/workout': (context) => const WorkoutLogScreen(),
         '/progress': (context) => const ProgressScreen(),
         '/settings': (context) => SettingsScreen(
-              onThemeToggle: _toggleTheme,
+              onThemeToggle: () => _toggleTheme(),
               isDarkMode: _themeMode == ThemeMode.dark,
             ),
       },
