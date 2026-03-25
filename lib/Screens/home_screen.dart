@@ -170,6 +170,12 @@ String getQuestStatus() {
               },
               child: const Text("View Progress"),
             ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/settings');
+              },
+              child: const Text("Settings"),
+            ),
 
             Expanded(
               child: workouts.isEmpty
