@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Data/database_helper.dart';
+import 'home_screen.dart';
+import 'workout_log_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   final VoidCallback onThemeToggle;
@@ -35,13 +37,11 @@ class SettingsScreen extends StatelessWidget {
 
     if (confirmed != true) return;
 
-    final db = await DatabaseHelper.instance.database;
-    await db.delete('exercises');
-    await db.delete('workouts');
+    await DatabaseHelper.resetDatabase();
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('streak');
-
+    
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('All data has been reset.')),

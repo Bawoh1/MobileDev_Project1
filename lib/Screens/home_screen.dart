@@ -29,11 +29,28 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> loadStreak() async {
   final prefs = await SharedPreferences.getInstance();
+  final lastDateStr = prefs.getString('lastWorkoutDate');
+  int current = prefs.getInt('streak') ?? 0;
+
+  if (lastDateStr != null) {
+    final lastDate = DateTime.parse(lastDateStr);
+    final today = DateTime.now();
+    final daysDiff = DateTime(today.year, today.month, today.day)
+        .difference(DateTime(lastDate.year, lastDate.month, lastDate.day))
+        .inDays;
+    if (daysDiff >= 2) {
+      current = 0;
+      await prefs.setInt('streak', 0);
+    }
+  }
+
   setState(() {
-    streak = prefs.getInt('streak') ?? 0;
+    streak = current;
   });
 }
 String getQuestStatus() {
+  if (streak >= 21) return " 21-Day Streak Complete! 🔥🔥";
+  if (streak >= 14) return " 14-Day Streak Complete! 🔥";
   if (streak >= 7) return " 7-Day Streak Complete!";
   if (streak >= 3) return " 3-Day Streak Achieved!";
   return "Start your fitness journey!";
@@ -47,10 +64,30 @@ String getQuestStatus() {
     await DatabaseHelper.instance.createWorkout(name);
 
     final prefs = await SharedPreferences.getInstance();
+    final lastDateStr = prefs.getString('lastWorkoutDate');
+    final today = DateTime.now();
+    final todayOnly = DateTime(today.year, today.month, today.day);
     int current = prefs.getInt('streak') ?? 0;
-    current++;
+
+    if (lastDateStr == null) {
+    
+      current = 1;
+    } else {
+      final lastDate = DateTime.parse(lastDateStr);
+      final lastOnly = DateTime(lastDate.year, lastDate.month, lastDate.day);
+      final daysDiff = todayOnly.difference(lastOnly).inDays;
+
+      if (daysDiff == 0) {
+        
+      } else if (daysDiff == 1) {
+        current++;
+      } else {
+        current = 1;
+      }
+    }
 
     await prefs.setInt('streak', current);
+    await prefs.setString('lastWorkoutDate', today.toIso8601String());
 
     await loadStreak();
     await loadWorkouts();
@@ -172,7 +209,12 @@ String getQuestStatus() {
             ),
             ElevatedButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/settings');
+                Navigator.pushNamed(context, '/settings').then((_) {
+                  if (mounted) {
+                    loadWorkouts();
+                    loadStreak();
+                  }
+                });
               },
               child: const Text("Settings"),
             ),
@@ -185,9 +227,13 @@ String getQuestStatus() {
                       itemBuilder: (context, index) {
                         final workout = workouts[index];
 
+                        final dt = DateTime.tryParse(workout['date'] ?? '');
+                        final formattedDate = dt != null
+                            ? '${dt.month}/${dt.day}/${dt.year}'
+                            : workout['date'];
                         return ListTile(
                           title: Text(workout['name']),
-                          subtitle: Text(workout['date']),
+                          subtitle: Text(formattedDate),
                           onTap: () {
                             Navigator.pushNamed(
                               context,

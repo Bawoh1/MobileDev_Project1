@@ -102,6 +102,17 @@ Future<int> updateWorkout(int id, Map<String, dynamic> data) async {
   );
 }
   
+  // Reset (delete and reinitialize) the database
+  static Future<void> resetDatabase() async {
+    if (_database != null) {
+      await _database!.close();
+      _database = null;
+    }
+    final dbPath = await getDatabasesPath();
+    final path = join(dbPath, 'myapp.db');
+    await deleteDatabase(path);
+  }
+
   // Close database connection
   Future close() async {
     final db = await database;
