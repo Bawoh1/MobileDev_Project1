@@ -1,16 +1,21 @@
-# fitness_mobile
+# Fitness Mobile
 
-A new Flutter project.
+Fitness Mobile is an application built using Flutter that helps users track workouts, stay consistent, and visualize their fitness progress over time.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+### Workout Tracking
+- Create and delete workouts
+- View all current workouts
 
-A few resources to get you started if this is your first Flutter project:
+### Exercise Logging
+- Add specific exercises to workout plans
+- Input sets, reps, and weight
+- Edit and delete exercises
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### Progress tracking
+- Total workouts and exercises tracked
+- Average sets and reps
+- Maximum weight lifted
+- Personal records per exercise
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
