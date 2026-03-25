@@ -28,37 +28,38 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> loadStreak() async {
-  final prefs = await SharedPreferences.getInstance();
-  final lastDateStr = prefs.getString('lastWorkoutDate');
-  int current = prefs.getInt('streak') ?? 0;
+    final prefs = await SharedPreferences.getInstance();
+    final lastDateStr = prefs.getString('lastWorkoutDate');
+    int current = prefs.getInt('streak') ?? 0;
 
-  if (lastDateStr != null) {
-    final lastDate = DateTime.parse(lastDateStr);
-    final today = DateTime.now();
-    final daysDiff = DateTime(today.year, today.month, today.day)
-        .difference(DateTime(lastDate.year, lastDate.month, lastDate.day))
-        .inDays;
-    if (daysDiff >= 2) {
-      current = 0;
-      await prefs.setInt('streak', 0);
+    if (lastDateStr != null) {
+      final lastDate = DateTime.parse(lastDateStr);
+      final today = DateTime.now();
+      final daysDiff = DateTime(today.year, today.month, today.day)
+          .difference(DateTime(lastDate.year, lastDate.month, lastDate.day))
+          .inDays;
+      if (daysDiff >= 2) {
+        current = 0;
+        await prefs.setInt('streak', 0);
+      }
     }
+
+    setState(() {
+      streak = current;
+    });
   }
 
-  setState(() {
-    streak = current;
-  });
-}
-String getQuestStatus() {
-  if (streak >= 21) return " 21-Day Streak Complete! 🔥🔥";
-  if (streak >= 14) return " 14-Day Streak Complete! 🔥";
-  if (streak >= 7) return " 7-Day Streak Complete!";
-  if (streak >= 3) return " 3-Day Streak Achieved!";
-  return "Start your fitness journey!";
-}
+  String getQuestStatus() {
+    if (streak >= 21) return "21-Day Streak Complete! ????";
+    if (streak >= 14) return "14-Day Streak Complete! ??";
+    if (streak >= 7) return "7-Day Streak Complete!";
+    if (streak >= 3) return "3-Day Streak Achieved!";
+    return "Start your fitness journey!";
+  }
 
   Future<void> addWorkout() async {
-  showAddWorkoutDialog();
-}
+    showAddWorkoutDialog();
+  }
 
   Future<void> createAndTrackWorkout(String name) async {
     await DatabaseHelper.instance.createWorkout(name);
@@ -70,7 +71,6 @@ String getQuestStatus() {
     int current = prefs.getInt('streak') ?? 0;
 
     if (lastDateStr == null) {
-    
       current = 1;
     } else {
       final lastDate = DateTime.parse(lastDateStr);
@@ -78,7 +78,7 @@ String getQuestStatus() {
       final daysDiff = todayOnly.difference(lastOnly).inDays;
 
       if (daysDiff == 0) {
-        
+        // same day - no streak change
       } else if (daysDiff == 1) {
         current++;
       } else {
@@ -100,12 +100,12 @@ String getQuestStatus() {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Start Workout'),
+          title: const Text('New Workout'),
           content: TextField(
             controller: controller,
             decoration: const InputDecoration(
               labelText: 'Workout name',
-              hintText: 'Enter workout name',
+              hintText: 'e.g. Chest Day, Morning Run',
             ),
             autofocus: true,
           ),
@@ -114,7 +114,7 @@ String getQuestStatus() {
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cancel'),
             ),
-            ElevatedButton(
+            FilledButton(
               onPressed: () {
                 final name = controller.text.trim().isEmpty
                     ? 'New Workout'
@@ -152,7 +152,7 @@ String getQuestStatus() {
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cancel'),
             ),
-            ElevatedButton(
+            FilledButton(
               onPressed: () async {
                 final newName = controller.text.trim();
                 if (newName.isNotEmpty) {
@@ -181,52 +181,57 @@ String getQuestStatus() {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Fitness Mobile'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.bar_chart_rounded),
+            onPressed: () => Navigator.pushNamed(context, '/progress'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings_rounded),
+            onPressed: () =>
+                Navigator.pushNamed(context, '/settings').then((_) {
+              if (mounted) {
+                loadWorkouts();
+                loadStreak();
+              }
+            }),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-              Text(
-                "Current Streak: $streak days",
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            Text(
+              'Current Streak: $streak days',
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            Text(getQuestStatus()),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: addWorkout,
+                child: const Text('Create Workout'),
               ),
-              Text(
-                getQuestStatus(),
-                style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 24),
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Recent Workouts',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
-            ElevatedButton(
-              onPressed: addWorkout,
-              child: const Text('Start Workout'),
             ),
-
-            const SizedBox(height: 20),
-
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/progress');
-              },
-              child: const Text("View Progress"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/settings').then((_) {
-                  if (mounted) {
-                    loadWorkouts();
-                    loadStreak();
-                  }
-                });
-              },
-              child: const Text("Settings"),
-            ),
-
+            const SizedBox(height: 8),
             Expanded(
               child: workouts.isEmpty
-                  ? const Center(child: Text("No workouts yet"))
+                  ? const Center(child: Text('No workouts yet'))
                   : ListView.builder(
                       itemCount: workouts.length,
                       itemBuilder: (context, index) {
                         final workout = workouts[index];
-
                         final dt = DateTime.tryParse(workout['date'] ?? '');
                         final formattedDate = dt != null
                             ? '${dt.month}/${dt.day}/${dt.year}'
@@ -234,13 +239,11 @@ String getQuestStatus() {
                         return ListTile(
                           title: Text(workout['name']),
                           subtitle: Text(formattedDate),
-                          onTap: () {
-                            Navigator.pushNamed(
-                              context,
-                              '/workout',
-                              arguments: workout['id'],
-                            );
-                          },
+                          onTap: () => Navigator.pushNamed(
+                            context,
+                            '/workout',
+                            arguments: workout['id'],
+                          ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -264,3 +267,4 @@ String getQuestStatus() {
     );
   }
 }
+

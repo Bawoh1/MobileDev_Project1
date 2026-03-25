@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Data/database_helper.dart';
-import 'home_screen.dart';
-import 'workout_log_screen.dart';
+
 
 class SettingsScreen extends StatelessWidget {
   final VoidCallback onThemeToggle;
@@ -41,6 +40,7 @@ class SettingsScreen extends StatelessWidget {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('streak');
+    await prefs.remove('lastWorkoutDate');
     
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
